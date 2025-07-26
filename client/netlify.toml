@@ -1,14 +1,3 @@
-Time Code Editor\client\netlify.toml
-[build]
-  base = ""
-  command = "cd client && npm install && npm run build"
-  publish = "client/build"
-
-[build.environment]
-  CI = "false"
-  NODE_VERSION = "16"
-  NPM_FLAGS = "--no-audit --no-fund"
-
 [[redirects]]
   from = "/*"
   to = "/index.html"
