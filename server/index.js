@@ -143,13 +143,16 @@ const languageConfig = {
   // other languages...
 };
 
-app.use(cors());
-app.use(express.json());
+app.use(cors({
+  origin: ['http://localhost:3000', 'https://your-netlify-domain.netlify.app'],
+  credentials: true
+}));
 
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000",
-    methods: ["GET", "POST"],
+    origin: ['http://localhost:3000', 'https://your-netlify-domain.netlify.app'],
+    methods: ['GET', 'POST'],
+    credentials: true
   },
 });
 
