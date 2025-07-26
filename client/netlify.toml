@@ -1,11 +1,12 @@
- Time Code Editor\client\netlify.toml
+Time Code Editor\client\netlify.toml
 [build]
-  command = "CI=false npm run build"
+  base = "client"
+  command = "npm run build"
   publish = "build"
 
 [build.environment]
+  CI = "false"
   NODE_VERSION = "16"
-  NPM_FLAGS = "--no-audit --no-fund"
 
 [[redirects]]
   from = "/*"
