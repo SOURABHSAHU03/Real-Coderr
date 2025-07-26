@@ -1,3 +1,14 @@
+\Desktop\Real Time Code Editor\client\netlify.toml
+[build]
+  base = "client"
+  command = "npm install && npm run build"
+  publish = "build"
+
+[build.environment]
+  CI = "false"
+  NODE_VERSION = "16"
+  GENERATE_SOURCEMAP = "false"
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
