@@ -39,13 +39,13 @@ function Home() {
   };
 
   return (
-    <div className="container-fluid">
+    <div className="container-fluid"  >
       <div className="row justify-content-center align-items-center min-vh-100">
         <div className="col-12 col-md-6">
-          <div className="card shadow-sm p-2 mb-5 bg-secondary rounded">
-            <div className="card-body text-center bg-dark">
+          <div className="card shadow-sm p-2 mb-5 bg-secondary rounded  ">
+            <div className="card-body text-center bg-black">
               <img
-                src="/images/codecast.png"
+                src="/images/codecasti.png"
                 alt="Logo"
                 className="img-fluid mx-auto d-block"
                 style={{ maxWidth: "150px" }}
