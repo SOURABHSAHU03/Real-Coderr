@@ -708,105 +708,177 @@
 
 //final
 
-import React, { useEffect, useRef } from "react";
-import "codemirror/mode/javascript/javascript";
-import "codemirror/theme/dracula.css";
-import "codemirror/addon/edit/closetag";
-import "codemirror/addon/edit/closebrackets";
-import "codemirror/lib/codemirror.css";
-import CodeMirror from "codemirror";
-import { ACTIONS } from "../Actions";
+// import React, { useEffect, useRef } from "react";
+// import "codemirror/mode/javascript/javascript";
+// import "codemirror/theme/dracula.css";
+// import "codemirror/addon/edit/closetag";
+// import "codemirror/addon/edit/closebrackets";
+// import "codemirror/lib/codemirror.css";
+// import CodeMirror from "codemirror";
+// import { ACTIONS } from "../Actions";
 
-function Editor({ socketRef, roomId, onCodeChange }) {
-  const editorRef = useRef(null);
-  const fileInputRef = useRef(null); // Ref for file input
+// function Editor({ socketRef, roomId, onCodeChange }) {
+//   const editorRef = useRef(null);
+//   const fileInputRef = useRef(null); // Ref for file input
 
-  useEffect(() => {
-    const init = async () => {
-      const editor = CodeMirror.fromTextArea(
-        document.getElementById("realtimeEditor"),
-        {
-          mode: { name: "javascript", json: true },
-          theme: "dracula",
-          autoCloseTags: true,
-          autoCloseBrackets: true,
-          lineNumbers: true,
+//   useEffect(() => {
+//     const init = async () => {
+//       const editor = CodeMirror.fromTextArea(
+//         document.getElementById("realtimeEditor"),
+//         {
+//           mode: { name: "javascript", json: true },
+//           theme: "dracula",
+//           autoCloseTags: true,
+//           autoCloseBrackets: true,
+//           lineNumbers: true,
+//         }
+//       );
+
+//       editorRef.current = editor;
+//       editor.setSize(null, "100%");
+//       editorRef.current.on("change", (instance, changes) => {
+//         const { origin } = changes;
+//         const code = instance.getValue();
+//         onCodeChange(code);
+//         if (origin !== "setValue") {
+//           socketRef.current.emit(ACTIONS.CODE_CHANGE, {
+//             roomId,
+//             code,
+//           });
+//         }
+//       });
+//     };
+
+//     init();
+//   }, []);
+
+//   // Handle incoming code changes from the server
+//   useEffect(() => {
+//     if (socketRef.current) {
+//       socketRef.current.on(ACTIONS.CODE_CHANGE, ({ code }) => {
+//         if (code !== null) {
+//           editorRef.current.setValue(code);
+//         }
+//       });
+//     }
+//     return () => {
+//       socketRef.current.off(ACTIONS.CODE_CHANGE);
+//     };
+//   }, [socketRef.current]);
+
+//   // Handle file input and set the file's content to the editor
+//   const handleFileChange = (event) => {
+//     const file = event.target.files[0];
+//     if (file) {
+//       const reader = new FileReader();
+//       reader.onload = (e) => {
+//         const fileContent = e.target.result;
+//         editorRef.current.setValue(fileContent);
+//         socketRef.current.emit(ACTIONS.CODE_CHANGE, {
+//           roomId,
+//           code: fileContent,
+//         });
+//       };
+//       reader.readAsText(file);
+//     }
+//   };
+
+//   // Trigger file input on button click
+//   const handleFileInputClick = () => {
+//     fileInputRef.current.click();
+//   };
+
+//   return (
+//     <div style={{ height: "600px" }}>
+//       <textarea id="realtimeEditor"></textarea>
+
+//       {/* Hidden file input */}
+//       <input
+//         type="file"
+//         ref={fileInputRef}
+//         style={{ display: "none" }}
+//         onChange={handleFileChange}
+//         accept=".txt,.js,.py,.cpp,.java"
+//       />
+
+//       {/* Button to open file manager */}
+//       <button onClick={handleFileInputClick} style={{ marginTop: "10px" }}>
+//         Choose File
+//       </button>
+//     </div>
+//   );
+// }
+
+// export default Editor;
+
+import React, { useEffect, useRef } from 'react';
+import Codemirror from 'codemirror';
+import 'codemirror/lib/codemirror.css';
+import 'codemirror/theme/dracula.css';
+import 'codemirror/mode/javascript/javascript';
+import 'codemirror/addon/edit/closetag';
+import 'codemirror/addon/edit/closebrackets';
+import ACTIONS from '../Actions';
+
+const Editor = ({ socketRef, roomId, onCodeChange }) => {
+    const editorRef = useRef(null);
+
+    useEffect(() => {
+        const init = async () => {
+            editorRef.current = Codemirror.fromTextArea(
+                document.getElementById('realtimeEditor'),
+                {
+                    mode: { name: 'javascript', json: true },
+                    theme: 'dracula',
+                    autoCloseTags: true,
+                    autoCloseBrackets: true,
+                    lineNumbers: true,
+                }
+            );
+
+            editorRef.current.on('change', (instance, changes) => {
+                const { origin } = changes;
+                const code = instance.getValue();
+                onCodeChange(code);
+                if (origin !== 'setValue' && socketRef.current) {
+                    socketRef.current.emit(ACTIONS.CODE_CHANGE, {
+                        roomId,
+                        code,
+                    });
+                }
+            });
+        };
+
+        init();
+
+        // Cleanup function
+        return () => {
+            if (editorRef.current) {
+                editorRef.current.toTextArea();
+            }
+        };
+    }, [onCodeChange, roomId, socketRef]); // Added missing dependencies
+
+    useEffect(() => {
+        const socket = socketRef.current; // Store ref value
+        
+        if (socket) {
+            const handleCodeChange = ({ code }) => {
+                if (code !== null && editorRef.current) {
+                    editorRef.current.setValue(code);
+                }
+            };
+
+            socket.on(ACTIONS.CODE_CHANGE, handleCodeChange);
+
+            // Cleanup function with stable ref
+            return () => {
+                socket.off(ACTIONS.CODE_CHANGE, handleCodeChange);
+            };
         }
-      );
+    }, [socketRef]); // Only socketRef needed as dependency
 
-      editorRef.current = editor;
-      editor.setSize(null, "100%");
-      editorRef.current.on("change", (instance, changes) => {
-        const { origin } = changes;
-        const code = instance.getValue();
-        onCodeChange(code);
-        if (origin !== "setValue") {
-          socketRef.current.emit(ACTIONS.CODE_CHANGE, {
-            roomId,
-            code,
-          });
-        }
-      });
-    };
-
-    init();
-  }, []);
-
-  // Handle incoming code changes from the server
-  useEffect(() => {
-    if (socketRef.current) {
-      socketRef.current.on(ACTIONS.CODE_CHANGE, ({ code }) => {
-        if (code !== null) {
-          editorRef.current.setValue(code);
-        }
-      });
-    }
-    return () => {
-      socketRef.current.off(ACTIONS.CODE_CHANGE);
-    };
-  }, [socketRef.current]);
-
-  // Handle file input and set the file's content to the editor
-  const handleFileChange = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const fileContent = e.target.result;
-        editorRef.current.setValue(fileContent);
-        socketRef.current.emit(ACTIONS.CODE_CHANGE, {
-          roomId,
-          code: fileContent,
-        });
-      };
-      reader.readAsText(file);
-    }
-  };
-
-  // Trigger file input on button click
-  const handleFileInputClick = () => {
-    fileInputRef.current.click();
-  };
-
-  return (
-    <div style={{ height: "600px" }}>
-      <textarea id="realtimeEditor"></textarea>
-
-      {/* Hidden file input */}
-      <input
-        type="file"
-        ref={fileInputRef}
-        style={{ display: "none" }}
-        onChange={handleFileChange}
-        accept=".txt,.js,.py,.cpp,.java"
-      />
-
-      {/* Button to open file manager */}
-      <button onClick={handleFileInputClick} style={{ marginTop: "10px" }}>
-        Choose File
-      </button>
-    </div>
-  );
-}
+    return <textarea id="realtimeEditor"></textarea>;
+};
 
 export default Editor;
