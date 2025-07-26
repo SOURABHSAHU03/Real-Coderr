@@ -1,5 +1,4 @@
 import { io } from 'socket.io-client';
-import ACTIONS from './Actions'; // Note the relative path './Actions'
 
 export const initSocket = async () => {
     const options = {
@@ -10,6 +9,12 @@ export const initSocket = async () => {
     };
 
     const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000';
-    const socket = io(BACKEND_URL, options);
-    return socket;
+    
+    try {
+        const socket = io(BACKEND_URL, options);
+        return socket;
+    } catch (error) {
+        console.error('Socket connection failed:', error);
+        throw error;
+    }
 };
